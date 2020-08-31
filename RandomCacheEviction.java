@@ -19,13 +19,25 @@ public class RandomCacheEviction<K,V> {
         }
     }
 
-    private final int capacity;
-    private final HashMap<K, RandomCacheObject<K,V>> cache;
+    private int currentSize;
+    private int maxCapacity;
+    private HashMap<K, RandomCacheObject<K,V>> cache;
 
 
-    public RandomCacheEviction() {
-        capacity = create();
-        cache = new HashMap<>(capacity);
+    public RandomCacheEviction(int initialCapacity) {
+        this.currentSize = initialCapacity;
+        maxCapacity = create();
+        cache = new HashMap<>();
+    }
+
+    public void setCacheSize(HashMap<K, RandomCacheObject<K,V>> cache) {
+        this.cache = cache;
+        RandomCacheObject<K, V> randomNode = cache.get(1);
+        if (currentSize <= maxCapacity) {
+            currentSize = maxCapacity;
+            RandomCacheEviction customCache = new RandomCacheEviction(currentSize);
+        } else if (currentSize > maxCapacity) {
+            print(randomNode);        }
     }
 
     public int create() {
@@ -44,13 +56,14 @@ public class RandomCacheEviction<K,V> {
     }
 
     public void add(K key, V value) {
+        setCacheSize(cache);
         RandomCacheObject<K, V> fetchedObject = cache.get(key);
         // if key exists, tries to fetch its corresponding cache object, and replace its value
         if (cache.containsKey(key)) {
             fetchedObject.value = value;
         } else {
             // removes random cache object
-            if (cache.size() == capacity) {
+            if (cache.size() == maxCapacity) {
                 System.out.println("The max capacity of the cache has been reached.");
                 removeRandomNode(fetchedObject);
             }
@@ -66,7 +79,7 @@ public class RandomCacheEviction<K,V> {
         return fetchedObject != null ? fetchedObject.value : null;
     }
 
-    protected Boolean exists(K key) {
+    public Boolean exists(K key) {
         RandomCacheObject<K, V> fetchedObject = cache.get(key);
         removeRandomNode(fetchedObject);
         boolean elementExists;
@@ -78,6 +91,13 @@ public class RandomCacheEviction<K,V> {
         return elementExists;
     }
 
+    public void print(RandomCacheObject<K, V> node) {
+        while (node != null) {
+            System.out.print(node.value + " -> ");
+        }
+        System.out.println();
+    }
+
     private int generateRandom() {
         Random rand = new Random();
         int cacheSize = 4;
@@ -87,9 +107,8 @@ public class RandomCacheEviction<K,V> {
 
     private void removeRandomNode(RandomCacheObject<K, V> node) {
         node.toBeEvicted = generateRandom();
-        if (node.toBeEvicted == capacity) {
+        if (node.toBeEvicted == maxCapacity) {
             cache.remove(node);
         }
     }
 }
-
