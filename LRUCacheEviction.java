@@ -27,16 +27,26 @@ public class LRUCacheEviction<K,V> {
         }
     }
 
-    private final int capacity;
+    private int currentSize;
+    private int maxCapacity;
     private CacheObject<K,V> leastRecentlyUsed;
     private CacheObject<K,V> mostRecentlyUsed;
     private final HashMap<K, CacheObject<K,V>> cache;
 
-    public LRUCacheEviction() {
-        capacity = createSpecificCacheSize();
-        cache = new HashMap<>(capacity);
+    public LRUCacheEviction(int initialCapacity) {
+        this.currentSize = initialCapacity;
+        maxCapacity = createSpecificCacheSize();
+        cache = new HashMap<>();
     }
 
+    public void setCacheSize(HashMap<K, CacheObject<K,V>> cache) {
+        this.cache = cache;
+        if (currentSize <= maxCapacity) {
+            currentSize = maxCapacity;
+            LRUCacheEviction customCache = new LRUCacheEviction(currentSize);
+        } else if (currentSize > maxCapacity) {
+            print();        }
+    }
     public int createSpecificCacheSize() {
         System.out.println("Please specify the size (# of entries) for your memory cache: ");
         Scanner scanner = new Scanner(System.in);
@@ -53,6 +63,7 @@ public class LRUCacheEviction<K,V> {
     }
 
     public void add(K key, V value) {
+        setCacheSize(cache);
         CacheObject<K, V> fetchedObject = cache.get(key);
         // if key exists, tries to fetch its corresponding cache object, and replace its value
         if (cache.containsKey(key)) {
@@ -61,7 +72,7 @@ public class LRUCacheEviction<K,V> {
             shiftMostRecentlyUsedNode(fetchedObject);
         } else {
             // removes most recently accessed cache object
-            if (cache.size() == capacity) {
+            if (currentSize == maxCapacity && !cache.containsKey(key)) {
                 System.out.println("The max capacity of the cache has been reached.");
                 cache.remove(leastRecentlyUsed.key);
                 removeLeastRecentlyUsedNode(leastRecentlyUsed);
@@ -80,7 +91,7 @@ public class LRUCacheEviction<K,V> {
         return fetchedObject != null ? fetchedObject.value : null;
     }
 
-    protected Boolean exists(K key) {
+    public Boolean exists(K key) {
         CacheObject<K, V> fetchedObject = cache.get(key);
         removeLeastRecentlyUsedNode(fetchedObject);
         shiftMostRecentlyUsedNode(fetchedObject);
@@ -93,7 +104,7 @@ public class LRUCacheEviction<K,V> {
         return elementExists;
     }
 
-    protected void print() {
+    public void print() {
         CacheObject<K, V> currentHead = leastRecentlyUsed;
         while (currentHead != null) {
             System.out.print(currentHead.value + " -> ");
@@ -102,6 +113,7 @@ public class LRUCacheEviction<K,V> {
         System.out.println();
     }
 
+    // removes CacheObject at the left-end of the doubly linked list as it the last recently accessed element
     private void removeLeastRecentlyUsedNode (CacheObject<K, V> node) {
         if (node == null)
             return;
@@ -118,6 +130,7 @@ public class LRUCacheEviction<K,V> {
         }
     }
 
+    // shifts CacheObject to the right-end of the doubly linked list as it was most recently accessed
     private void shiftMostRecentlyUsedNode (CacheObject<K, V> node) {
         if (node == null)
             return;
