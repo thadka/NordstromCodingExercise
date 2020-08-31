@@ -4,7 +4,7 @@ public class InMemoryCache {
 
     public static void main (String[]args){
         // TODO Auto-generated method stub
-        LRUCacheEviction cache = new LRUCacheEviction();
+        LRUCacheEviction cache = new LRUCacheEviction(16);
         cache.add(1, "cake recipe");
         cache.add(2, "frosting recipe");
         cache.add(3, "cupcake recipe");
@@ -20,7 +20,7 @@ public class InMemoryCache {
         cache.print();
 
 
-        RandomCacheEviction cache2 = new RandomCacheEviction();
+        RandomCacheEviction cache2 = new RandomCacheEviction(16);
 
         cache2.add(1, "cake recipe");
         cache2.add(2, "frosting recipe");
