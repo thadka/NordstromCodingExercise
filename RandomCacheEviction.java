@@ -20,12 +20,12 @@ public class RandomCacheEviction<K,V> {
     }
 
     private final int capacity;
-    private final HashMap<K, RandomCacheObject> cache;
+    private final HashMap<K, RandomCacheObject<K,V>> cache;
 
 
     public RandomCacheEviction() {
         capacity = create();
-        this.cache = new HashMap<>(capacity);
+        cache = new HashMap<>(capacity);
     }
 
     public int create() {
