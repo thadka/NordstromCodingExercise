@@ -28,13 +28,13 @@ public class LRUCacheEviction<K,V> {
     }
 
     private final int capacity;
-    private CacheObject leastRecentlyUsed;
-    private CacheObject mostRecentlyUsed;
-    private final HashMap<K, CacheObject> cache;
+    private CacheObject<K,V> leastRecentlyUsed;
+    private CacheObject<K,V> mostRecentlyUsed;
+    private final HashMap<K, CacheObject<K,V>> cache;
 
     public LRUCacheEviction() {
         capacity = createSpecificCacheSize();
-        this.cache = new HashMap<>(capacity);
+        cache = new HashMap<>(capacity);
     }
 
     public int createSpecificCacheSize() {
@@ -105,33 +105,29 @@ public class LRUCacheEviction<K,V> {
     private void removeLeastRecentlyUsedNode (CacheObject<K, V> node) {
         if (node == null)
             return;
-        CacheObject prevSpace = node.previous;
-        CacheObject nextSpace = node.next;
 
-        if (prevSpace != null) {
-            prevSpace.next = nextSpace;
+        if (node.previous != null) {
+            node.previous.next = node.next;
         } else {
-            leastRecentlyUsed = nextSpace;
+            leastRecentlyUsed = node.next;
         }
-        if (nextSpace != null) {
-            nextSpace.previous = prevSpace;
+        if (node.next != null) {
+            node.next.previous = node.previous;
         } else {
-            mostRecentlyUsed = prevSpace;
+            mostRecentlyUsed = node.previous;
         }
     }
 
     private void shiftMostRecentlyUsedNode (CacheObject<K, V> node) {
         if (node == null)
             return;
-        CacheObject prevSpace = node.previous;
-        CacheObject nextSpace = node.next;
 
         if (leastRecentlyUsed == null) {
             leastRecentlyUsed = mostRecentlyUsed = node;
         } else {
             mostRecentlyUsed.next = node;
-            prevSpace = mostRecentlyUsed;
-            nextSpace = null;
+            node.previous = mostRecentlyUsed;
+            node.next = null;
             mostRecentlyUsed = node;
         }
     }
